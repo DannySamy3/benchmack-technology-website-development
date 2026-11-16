@@ -34,6 +34,18 @@ const nextConfig = {
   // Self-contained server in .next/standalone for VPS / Docker hosting (see DEPLOYMENT.md).
   output: 'standalone',
   poweredByHeader: false,
+  // nginx gzips responses in production (deploy/nginx.conf); doing it again in Node wastes CPU.
+  compress: false,
+  images: {
+    // Source images are at most 1600px wide, so skip the default 1920/2048/3840 variants:
+    // fewer resized copies to generate (CPU) and store (disk).
+    deviceSizes: [640, 828, 1080, 1200, 1600],
+    imageSizes: [64, 128, 256, 384],
+    formats: ['image/webp'],
+    // Keep optimized images for 7 days before regenerating them. When replacing an
+    // image in public/, give it a new file name so visitors get the new version.
+    minimumCacheTTL: 7 * 24 * 60 * 60,
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },

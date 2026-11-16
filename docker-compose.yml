@@ -1,5 +1,5 @@
 # Run with:  docker compose --env-file .env.production up -d --build
-# (--env-file supplies the Turnstile build argument; env_file below supplies runtime settings.)
+# (--env-file supplies the Turnstile build argument and APP_PORT; env_file below supplies runtime settings.)
 services:
   web:
     build:
@@ -10,12 +10,33 @@ services:
     container_name: benchmack-website
     restart: unless-stopped
     env_file: .env.production
-    # Only reachable from the server itself; nginx is the public entry point.
-    # (Publishing on 127.0.0.1 also stops Docker from bypassing the ufw firewall.)
+    environment:
+      PORT: ${APP_PORT:-3878}
+
+    # Unique port, published on localhost only: nginx is the public entry point.
+    # (Binding to 127.0.0.1 also stops Docker from bypassing the ufw firewall.)
+    # If you change APP_PORT, update the upstream in deploy/nginx.conf to match.
     ports:
-      - '127.0.0.1:3000:3000'
+      - '127.0.0.1:${APP_PORT:-3878}:${APP_PORT:-3878}'
+
+    # --- Resource limits (measured usage: ~45 MiB idle, ~75 MiB peak under load) ---
+    mem_limit: 256m # hard ceiling; the container is restarted if it is ever exceeded
+    memswap_limit: 256m # no swap: keeps the site fast and the server responsive
+    cpus: 1.0 # at most one CPU core, even while generating images
+    pids_limit: 64 # caps processes/threads (normal: ~10)
+
+    # --- Hardening ---
+    init: true # tiny init process: clean shutdowns, no zombie processes
+    read_only: true # container filesystem is read-only...
+    tmpfs:
+      # ...except an in-memory cache for resized images (cleared on restart) and /tmp.
+      - /app/.next/cache:size=64m,uid=1001,gid=1001,mode=0755
+      - /tmp:size=16m
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
+
     logging:
       driver: json-file
       options:

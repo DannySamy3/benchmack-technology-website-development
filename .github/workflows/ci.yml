@@ -52,31 +52,24 @@ jobs:
           retention-days: 14
 
   docker:
-    name: Docker image builds
+    name: Docker stack builds and runs
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
-
-      - name: Build image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: false
-          load: true
-          tags: benchmack-website:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Start container and check it responds
+      - name: Start the production stack (same docker-compose.yml as the server)
         run: |
-          docker run -d --name web -p 127.0.0.1:3000:3000 benchmack-website:ci
-          for i in $(seq 1 30); do
-            if curl -fsS -o /dev/null http://127.0.0.1:3000/; then echo "Container is up"; break; fi
-            sleep 1
-          done
-          curl -fsS -o /dev/null http://127.0.0.1:3000/
-          curl -fsS -o /dev/null "http://127.0.0.1:3000/_next/image?url=%2Fhero-showcase.jpg&w=640&q=75"
-          docker logs web
+          echo "CONTACT_DRY_RUN=1" > .env.production
+          docker compose --env-file .env.production up -d --build --wait --wait-timeout 120
+
+      - name: Check pages and image optimization respond
+        run: |
+          curl -fsS -o /dev/null http://127.0.0.1:3878/
+          curl -fsS -o /dev/null http://127.0.0.1:3878/work/smart-health
+          curl -fsS -o /dev/null "http://127.0.0.1:3878/_next/image?url=%2Fhero-showcase.jpg&w=640&q=75"
+          docker stats --no-stream benchmack-website
+
+      - name: Show container logs
+        if: always()
+        run: docker compose --env-file .env.production logs web
