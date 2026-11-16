@@ -1,0 +1,17 @@
+# Keep the build context small and never copy secrets into the image.
+.git
+.github
+.next
+node_modules
+playwright-report
+test-results
+blob-report
+tests
+*.md
+.env*
+!.env.example
+Dockerfile
+docker-compose.yml
+.dockerignore
+deploy
+.DS_Store

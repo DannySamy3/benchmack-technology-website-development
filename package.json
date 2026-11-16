@@ -1,33 +1,42 @@
 {
-  "name": "my-project",
+  "name": "benchmack-technology-website",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@12.3.4",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "postbuild": "node scripts/copy-standalone-assets.mjs",
+    "start": "node .next/standalone/server.js",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "playwright test",
+    "check": "npm run lint && npm run typecheck && npm run format:check"
   },
   "dependencies": {
-    "@base-ui/react": "^1.5.0",
-    "@vercel/analytics": "1.6.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
     "next": "16.4.3",
     "react": "^19",
     "react-dom": "^19",
-    "shadcn": "^4.11.0",
-    "tailwind-merge": "^3.3.1",
-    "tw-animate-css": "^1.4.0"
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.3",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "postcss": "^8.5",
+    "prettier": "^3.10.1",
     "tailwindcss": "^4.3.3",
     "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": ">=20.19"
   }
 }

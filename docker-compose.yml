@@ -1,0 +1,23 @@
+# Run with:  docker compose --env-file .env.production up -d --build
+# (--env-file supplies the Turnstile build argument; env_file below supplies runtime settings.)
+services:
+  web:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+    image: benchmack-website:latest
+    container_name: benchmack-website
+    restart: unless-stopped
+    env_file: .env.production
+    # Only reachable from the server itself; nginx is the public entry point.
+    # (Publishing on 127.0.0.1 also stops Docker from bypassing the ufw firewall.)
+    ports:
+      - '127.0.0.1:3000:3000'
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'

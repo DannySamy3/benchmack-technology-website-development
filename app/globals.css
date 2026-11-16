@@ -1,6 +1,4 @@
 @import 'tailwindcss';
-@import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -76,6 +74,8 @@
   html {
     scroll-behavior: smooth;
     scroll-padding-top: 5rem;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
   }
   body {
     @apply bg-background text-foreground;
@@ -94,22 +94,148 @@
   }
 }
 
+/* ---------- Interactive Cards & Surfaces ---------- */
+
 .card-border {
   background: #ffffff;
   border: 1px solid var(--color-line);
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease,
+    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.card-border:hover {
-  border-color: var(--color-line-strong);
-  box-shadow: 0 8px 24px -6px rgb(15 23 42 / 0.05);
+.btn-lift {
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.img-zoom {
+  transition: transform 550ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .card-border:hover {
+    border-color: var(--color-line-strong);
+    box-shadow:
+      0 12px 28px -8px rgb(15 23 42 / 0.08),
+      0 4px 10px -4px rgb(15 23 42 / 0.04);
+    @media (prefers-reduced-motion: no-preference) {
+      transform: translateY(-3px);
+    }
+  }
+
+  .btn-lift:hover {
+    @media (prefers-reduced-motion: no-preference) {
+      transform: translateY(-1.5px);
+    }
+    box-shadow: 0 6px 16px -4px rgb(37 99 235 / 0.22);
+  }
+
+  .group:hover .img-zoom,
+  .card-border:hover .img-zoom {
+    @media (prefers-reduced-motion: no-preference) {
+      transform: scale(1.035);
+    }
+  }
+}
+
+.btn-lift:active {
+  transform: scale(0.98);
 }
 
 .site-header {
-  background-color: rgb(255 255 255 / 0.92);
+  background-color: rgb(255 255 255 / 0.9);
   border-bottom: 1px solid var(--color-line);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+/* ---------- Motion & Scroll-Driven Animations ---------- */
+
+@keyframes fade-up-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes float-gentle {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+
+@keyframes scroll-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes header-elevate {
+  to {
+    background-color: rgb(255 255 255 / 0.97);
+    box-shadow: 0 4px 20px -4px rgb(15 23 42 / 0.06);
+  }
+}
+
+.animate-fade-up {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: fade-up-in 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+.delay-1 {
+  animation-delay: 90ms;
+}
+.delay-2 {
+  animation-delay: 180ms;
+}
+.delay-3 {
+  animation-delay: 270ms;
+}
+.delay-4 {
+  animation-delay: 360ms;
+}
+
+.animate-float-gentle {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: float-gentle 6s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    .reveal {
+      animation: scroll-reveal auto linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% cover 26%;
+    }
+  }
+
+  @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+    .site-header {
+      animation: header-elevate auto linear both;
+      animation-timeline: scroll(block root);
+      animation-range: 0px 80px;
+    }
+  }
 }
 
 @media (forced-colors: active) {
